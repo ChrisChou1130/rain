@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- 微信/社交平台分享卡片 OG标签 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="🎵 全世界的雨 - Cover by Chris (v2)">
+<meta property="og:description" content="翻唱作品 · 周深/陈嘉桦《八仙!》电影主题曲">
+<meta property="og:image" content="https://chrischou1130.github.io/rain/cover2.jpg">
+<meta property="og:url" content="https://chrischou1130.github.io/rain/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="全世界的雨 - Cover by Chris (v2)">
+<meta name="twitter:description" content="翻唱作品 · 周深/陈嘉桦《八仙!》电影主题曲">
+<meta name="twitter:image" content="https://chrischou1130.github.io/rain/cover2.jpg">
+<meta itemprop="name" content="全世界的雨 - Cover by Chris (v2)">
+<meta itemprop="image" content="https://chrischou1130.github.io/rain/cover2.jpg">
+<meta itemprop="description" content="翻唱作品 · 点击播放">
+
+<title>全世界的雨 - Cover by Chris (v2)</title>
+
+<style>
+  :root {
+    --album-color: #4a7c9b;
+    --accent: linear-gradient(135deg, #3d6b8a, #4a7c9b, #6ba3c7);
+    --accent-solid: #6ba3c7;
+    --accent-light: #b8d4e8;
+    --text-dim: #8ab4d4;
+    --glow: rgba(107,163,199,0.6);
+    --glow-soft: rgba(107,163,199,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family:-apple-system,'SF Pro Display','Segoe UI',system-ui,sans-serif;
+    background:#0a0a14; color:#fff;
+    min-height:100vh; min-height:100dvh;
+    display:flex; justify-content:center; align-items:center;
+    overflow:hidden; user-select:none; -webkit-user-select:none;
+  }
+
+  /* 环境光背景 */
+  .ambient-bg { position:fixed; inset:0; pointer-events:none; z-index:0; }
+  .ambient-orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.18; animation:orbFloat 14s ease-in-out infinite; }
+  .ambient-orb:nth-child(1) { width:300px; height:300px; background:#4a7c9b; top:-80px; left:-80px; }
+  .ambient-orb:nth-child(2) { width:260px; height:260px; background:#3d6b8a; bottom:-60px; right:-60px; animation-delay:-5s; }
+  @keyframes orbFloat { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(25px,-25px) scale(1.05);} }
+
+  /* ===== 播放器主体 ===== */
+  .player {
+    position:relative; z-index:1;
+    width:100%; max-width:420px;
+    padding:24px 24px 28px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  /* ===== 封面 + 呼吸光环 ===== */
+  .cover-wrapper {
+    position:relative; margin-bottom:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* 单一呼吸光环 */
+  .aurora-ring {
+    position:absolute;
+    width:192px; height:192px;
+    border-radius:50%;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    border:1.5px solid rgba(107,163,199,0.2);
+    box-shadow:
+      0 0 20px rgba(107,163,199,0.15),
+      0 0 50px rgba(107,163,199,0.07),
+      inset 0 0 20px rgba(107,163,199,0.07);
+    pointer-events:none;
+    animation:ringBreath 4s ease-in-out infinite;
+    transition:box-shadow 0.3s ease;
+  }
+
+  @keyframes ringBreath {
+    0%,100%{
+      opacity:0.35;
+      transform:translate(-50%,-50%) scale(1);
+      border-color:rgba(107,163,199,0.15);
+      box-shadow:0 0 15px rgba(107,163,199,0.12), 0 0 40px rgba(107,163,199,0.05), inset 0 0 15px rgba(107,163,199,0.05);
+    }
+    50%{
+      opacity:0.85;
+      transform:translate(-50%,-50%) scale(1.055);
+      border-color:rgba(107,163,199,0.35);
+      box-shadow:0 0 35px rgba(107,163,199,0.3), 0 0 80px rgba(107,163,199,0.12), inset 0 0 35px rgba(107,163,199,0.1);
+    }
+  }
+
+  /* 封面主体 */
+  .cover {
+    width:150px; height:150px; border-radius:50%; object-fit:cover;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.6),
+      0 0 60px rgba(107,163,199,0.08);
+    animation:spin 20s linear infinite;
+    position:relative; z-index:2;
+  }
+  .cover.paused { animation-play-state:paused; }
+  @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  .cover-shine { display:none; }
+
+  .cover::after {
+    content:'';
+    position:absolute;
+    width:45px; height:22px;
+    background:radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    top:6px; left:12px;
+    border-radius:50%;
+    filter:blur(2px);
+    pointer-events:none;
+    z-index:3;
+  }
+
+  /* ===== 歌曲信息 ===== */
+  .song-info { text-align:center; margin-bottom:4px; }
+  .song-title { font-size:18px; font-weight:600; letter-spacing:0.5px; }
+  .song-artist {
+    font-size:12px; font-weight:600; color:var(--text-dim);
+    letter-spacing:1.2px;
+    text-shadow:0 0 8px rgba(107,163,199,0.3);
+  }
+
+  /* ===== 歌词区 ===== */
+  .lyrics-section {
+    flex:1; width:100%; min-height:160px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    gap:8px; margin-bottom:6px; position:relative;
+    perspective:400px;
+  }
+
+  .lyrics-section::before { display:none; }
+
+  .lyric-prev {
+    font-size:14px; font-weight:400; text-align:center;
+    color:rgba(255,255,255,0.12);
+    transform:perspective(400px) rotateX(18deg) translateY(-8px) scale(0.82);
+    transform-origin:center bottom;
+    filter:blur(1.5px);
+    transition:all 0.8s cubic-bezier(.25,.46,.45,.94);
+  }
+
+  .lyric-current {
+    font-size:21px; font-weight:700; text-align:center;
+    color:#fff; padding:0 16px;
+    transform:perspective(400px) rotateX(0deg) translateY(0) scale(1);
+    transform-origin:center center;
+    transition:all 0.5s cubic-bezier(.25,.46,.45,.94);
+    position:relative;
+    text-shadow:0 0 20px rgba(107,163,199,0.25);
+  }
+  .lyric-current::before {
+    content:'';
+    position:absolute;
+    inset:-6px -12px -4px -12px;
+    background:radial-gradient(ellipse 65% 50% at 50% 55%,
+      rgba(107,163,199,0.07) 0%,
+      rgba(107,163,199,0.02) 60%,
+      transparent 75%
+    );
+    border-radius:12px;
+    filter:blur(4px);
+    opacity:0;
+    animation:lyricBackGlow 4s ease-in-out infinite;
+    z-index:-1;
+    pointer-events:none;
+  }
+  .lyric-current.active::before {
+    opacity:1;
+  }
+  @keyframes lyricBackGlow {
+    0%,100% { opacity:0.25; filter:blur(5px); transform:scale(0.97); }
+    50% { opacity:0.9; filter:blur(3px); transform:scale(1); }
+  }
+
+  .lyric-next {
+    font-size:13px; font-weight:300; text-align:center;
+    color:rgba(255,255,255,0.08);
+    transform:perspective(400px) rotateX(12deg) translateY(8px) scale(0.78);
+    transform-origin:center top;
+    filter:blur(1px);
+    transition:all 0.8s cubic-bezier(.25,.46,.45,.94);
+    padding:0 16px;
+  }
+
+  .lyric-char {
+    display:inline-block; opacity:0;
+    transform:translateY(12px) scale(0.9);
+    transition:opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    transition-delay:var(--char-delay,0ms);
+  }
+  .lyric-current.active .lyric-char {
+    opacity:1;
+    transform:translateY(0) scale(1);
+    text-shadow:0 0 16px rgba(107,163,199,0.3);
+  }
+  .lyric-current.dissolving .lyric-char {
+    opacity:0 !important;
+    transform:translateY(-10px) scale(0.95) !important;
+    transition:all 0.5s cubic-bezier(.4,0,.2,1) !important;
+  }
+
+  /* ===== 进度条 ===== */
+  .progress-section { width:100%; margin-bottom:10px; }
+  .progress-bar {
+    position:relative; height:3px;
+    background:rgba(255,255,255,0.06); border-radius:3px; cursor:pointer; margin-bottom:6px;
+  }
+  .progress-fill {
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--accent);
+    border-radius:3px; width:0%; transition:width 0.08s linear;
+    box-shadow:0 0 8px rgba(107,163,199,0.4);
+  }
+  .progress-thumb {
+    position:absolute; top:50%; transform:translate(-50%,-50%) scale(0);
+    width:12px; height:12px; background:#fff; border-radius:50%;
+    box-shadow:0 0 12px rgba(107,163,199,0.6), 0 2px 6px rgba(0,0,0,0.3);
+    transition:transform 0.15s;
+  }
+  .progress-bar:hover .progress-fill { box-shadow:0 0 14px rgba(107,163,199,0.55); }
+
+  .progress-glow {
+    width:88%; height:6px;
+    margin:0 auto 2px;
+    background:transparent;
+    position:relative;
+    pointer-events:none;
+  }
+  .progress-glow::before {
+    content:'';
+    position:absolute; inset:-8px -10%;
+    background:
+      radial-gradient(ellipse 80% 100% at 50% 50%,
+        rgba(107,163,199,0.18) 0%,
+        rgba(100,140,190,0.08) 40%,
+        transparent 70%
+      );
+    animation:progressBreath 4s ease-in-out infinite;
+    border-radius:20px;
+    filter:blur(3px);
+  }
+  .progress-glow::after {
+    content:'';
+    position:absolute;
+    top:2px; left:12%; right:12%;
+    height:1.5px;
+    border-radius:2px;
+    background:linear-gradient(90deg,
+      transparent 0%,
+      rgba(130,175,220,0.15) 15%,
+      rgba(150,195,235,0.55) 35%,
+      rgba(180,215,245,0.75) 50%,
+      rgba(150,195,235,0.55) 65%,
+      rgba(130,175,220,0.15) 85%,
+      transparent 100%
+    );
+    animation:progressLineBreath 4s ease-in-out infinite;
+    box-shadow:
+      0 0 8px rgba(140,185,230,0.3),
+      0 0 24px rgba(120,170,215,0.12),
+      0 0 48px rgba(107,163,199,0.05);
+    filter:blur(0.2px);
+  }
+  @keyframes progressBreath {
+    0%,100%{ opacity:0.35; transform:scaleX(0.92); filter:blur(4px); }
+    50%{ opacity:1; transform:scaleX(1); filter:blur(2px); }
+  }
+  @keyframes progressLineBreath {
+    0%,100%{
+      opacity:0.3;
+      box-shadow:
+        0 0 4px rgba(140,185,230,0.1),
+        0 0 12px rgba(120,170,215,0.05);
+      background:linear-gradient(90deg,
+        transparent 0%,
+        rgba(130,175,220,0.06) 15%,
+        rgba(150,195,235,0.2) 35%,
+        rgba(180,215,245,0.28) 50%,
+        rgba(150,195,235,0.2) 65%,
+        rgba(130,175,220,0.06) 85%,
+        transparent 100%
+      );
+    }
+    50%{
+      opacity:1;
+      box-shadow:
+        0 0 10px rgba(150,195,235,0.4),
+        0 0 30px rgba(130,180,225,0.18),
+        0 0 56px rgba(107,163,199,0.08);
+      background:linear-gradient(90deg,
+        transparent 0%,
+        rgba(130,175,220,0.2) 15%,
+        rgba(155,200,240,0.6) 35%,
+        rgba(190,225,250,0.85) 50%,
+        rgba(155,200,240,0.6) 65%,
+        rgba(130,175,220,0.2) 85%,
+        transparent 100%
+      );
+    }
+  }
+  .progress-bar:active .progress-thumb { transform:translate(-50%,-50%) scale(1); }
+  .time-row { display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); }
+
+  /* ===== 控制按钮 ===== */
+  .controls { display:flex; align-items:center; justify-content:center; gap:32px; }
+  .ctrl-btn {
+    background:none; border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    padding:10px; border-radius:50%; transition:transform 0.12s, opacity 0.15s;
+  }
+  .ctrl-btn:hover svg { opacity:1; }
+  .ctrl-btn:active { transform:scale(0.88); }
+  .ctrl-btn svg { width:24px; height:24px; fill:rgba(255,255,255,0.5); transition:opacity 0.15s; }
+  .ctrl-btn.play-pause {
+    width:54px; height:54px;
+    background:var(--accent);
+    box-shadow:0 4px 20px rgba(74,124,155,0.45), 0 0 0 0 rgba(107,163,199,0);
+    border-radius:50%;
+    transition:transform 0.15s, box-shadow 0.3s;
+  }
+  .ctrl-btn.play-pause:hover {
+    box-shadow:0 4px 28px rgba(74,124,155,0.6), 0 0 18px rgba(107,163,199,0.2);
+  }
+  .ctrl-btn.play-pause svg { fill:#fff; width:24px; height:24px; }
+
+  /* ===== 故事编辑器 ===== */
+  .story-editor {
+    width:100%; margin-top:10px; display:none;
+    animation:storySlideIn 0.3s ease;
+  }
+  @keyframes storySlideIn {
+    from { opacity:0; transform:translateY(8px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .story-editor.show { display:block; }
+  .story-row {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:6px;
+  }
+  .story-label {
+    font-size:12px; color:var(--text-dim);
+  }
+  .story-done {
+    background:rgba(107,163,199,0.2); border:1px solid rgba(107,163,199,0.3);
+    color:#b8d4e8; font-size:12px; padding:3px 14px;
+    border-radius:12px; cursor:pointer;
+    transition:all 0.15s;
+  }
+  .story-done:hover {
+    background:rgba(107,163,199,0.35); border-color:rgba(107,163,199,0.5);
+  }
+  .story-editor textarea {
+    width:100%; padding:8px 14px;
+    background:rgba(107,163,199,0.08);
+    border:1px solid rgba(107,163,199,0.15);
+    border-radius:12px;
+    color:#b8d4e8; font-size:14px; font-style:italic;
+    outline:none; resize:none;
+    font-family:inherit;
+    transition:border-color 0.2s;
+    box-sizing:border-box;
+  }
+  .story-editor textarea:focus {
+    border-color:rgba(107,163,199,0.4);
+    background:rgba(107,163,199,0.12);
+  }
+  .story-editor textarea::placeholder {
+    color:rgba(184,212,232,0.25);
+  }
+  .story-preview {
+    margin-top:8px; padding:10px 16px;
+    background:rgba(0,0,0,0.25); border-radius:10px;
+    font-size:13px; font-style:italic;
+    color:rgba(184,212,232,0.55);
+    text-align:center;
+    min-height:20px;
+    display:none;
+    border:1px dashed rgba(107,163,199,0.1);
+  }
+  .story-preview.has-content {
+    display:block;
+    color:rgba(184,212,232,0.7);
+  }
+
+  /* ===== 分享卡按钮 ===== */
+  .share-btn {
+    margin-top:20px;
+    padding:12px 28px;
+    background:rgba(107,163,199,0.15);
+    border:1px solid rgba(107,163,199,0.3);
+    border-radius:25px;
+    color:#b8d4e8;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    transition:all 0.2s;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .share-btn:hover {
+    background:rgba(107,163,199,0.25);
+    border-color:rgba(107,163,199,0.5);
+    transform:translateY(-2px);
+    box-shadow:0 4px 16px rgba(107,163,199,0.2);
+  }
+  .share-btn svg {
+    width:16px; height:16px;
+    fill:currentColor;
+  }
+
+  @media (min-width:500px) and (min-height:750px) {
+    .cover { width:200px; height:200px; }
+    .aurora-ring { width:260px; height:260px; }
+    .song-title { font-size:20px; }
+    .lyrics-section { min-height:200px; }
+    .lyric-current { font-size:24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient-bg">
+  <div class="ambient-orb"></div>
+  <div class="ambient-orb"></div>
+</div>
+
+<div class="player">
+  <div class="cover-wrapper" onclick="togglePlay()">
+    <div class="aurora-ring"></div>
+    <div class="cover-shine"></div>
+    <img class="cover" id="albumCover" src="cover2.jpg" alt="">
+  </div>
+
+  <div class="song-info">
+    <div class="song-title">全世界的雨</div>
+    <div class="song-artist">Cover by Chris (v2)</div>
+  </div>
+
+  <div class="lyrics-section" id="lyricsSection">
+    <div class="lyric-prev" id="lyricPrev"></div>
+    <div class="lyric-current" id="lyricCurrent"></div>
+    <div class="lyric-next" id="lyricNext"></div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-glow"></div>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+      <div class="progress-thumb" id="progressThumb"></div>
+    </div>
+    <div class="time-row">
+      <span id="timeCurrent">0:00</span>
+      <span id="timeTotal">0:00</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="prevBtn">
+      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+    </button>
+    <button class="ctrl-btn play-pause" id="playBtn">
+      <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="iconPause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <button class="ctrl-btn" id="nextBtn">
+      <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+    </button>
+  </div>
+
+  <div class="story-editor" id="storyEditor">
+    <div class="story-row">
+      <span class="story-label">✏️ 写一句故事</span>
+      <button class="story-done" id="storyDone" onclick="closeStoryEditor()">完成</button>
+    </div>
+    <textarea id="storyInput" maxlength="40" rows="1" placeholder="比如：这首歌送给那个夏天..."></textarea>
+    <div class="story-preview" id="storyPreview"></div>
+  </div>
+
+  <button class="share-btn" id="shareBtn" onclick="generateShareCard()">
+    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.22-.09.45-.09.69 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
+    生成分享卡
+  </button>
+</div>
+
+<audio id="audio" preload="metadata" src="song.mp3"></audio>
+
+<canvas id="shareCanvas" style="display:none;"></canvas>
+
+<script>
+// 歌词数据（时间轴已根据你的翻唱版本调整：最终偏移 -2.27 + 0.5 = -1.77秒）
+const lyricsData = [
+  {t:11.49,l:'你知道吗 全世界的水都会相遇'},
+  {t:17.73,l:'在某 一片云做同一场雨'},
+  {t:23.85,l:'你知道吗 不管裹着怎样的际遇'},
+  {t:29.48,l:'我会奔向你 带着我潮湿的心'},
+  {t:37.00,l:'有落叶 有泥沙 你也一样吗？'},
+  {t:42.89,l:'水里藏着 两三件 不能被 撤回的悲伤'},
+  {t:49.05,l:'并肩的时候 阴影和明亮 一定很相像'},
+  {t:55.16,l:'你也一半'},
+  {t:58.07,l:'走 跑去天空撞一撞'},
+  {t:64.52,l:'全世界的雨'},
+  {t:66.42,l:'要自由的降落 不必被谁许可'},
+  {t:72.21,l:'我们裹着碎石裹着泡沫'},
+  {t:74.95,l:'一路无人知晓直到我们相遇这一刻'},
+  {t:78.64,l:'让全世界下雨 我陪着你滂沱'},
+  {t:84.46,l:'闪电划过'},
+  {t:87.88,l:'见证我们如何越过湖泊也越过沼泽'},
+  {t:92.62,l:'多清澈'},
+  {t:95.22,l:'全世界的雨'},
+  {t:97.22,l:'是透明的焰火'},
+  {t:100.55,l:'是遇见你的我'},
+  {t:113.53,l:'我站在 你身边 而你也一样'},
+  {t:119.88,l:'听见了吗 云之上 有雷声 似千军万马'},
+  {t:126.04,l:'我们是雨啊'},
+  {t:131.07,l:'下大一些'},
+  {t:135.06,l:'走'},
+  {t:138.39,l:'走 肩膀借来撞一撞'},
+  {t:143.43,l:'全世界的雨'},
+  {t:145.92,l:'要自由的降落 不必被谁许可'},
+  {t:151.18,l:'我们裹着碎石裹着泡沫'},
+  {t:153.95,l:'一路无人知晓直到我们相遇这一刻'},
+  {t:157.58,l:'让全世界下雨 我陪着你滂沱'},
+  {t:163.33,l:'闪电划过'},
+  {t:166.18,l:'见证我们如何越过湖泊也越过沼泽'},
+  {t:170.96,l:'多清澈'},
+  {t:174.13,l:'全世界的雨'},
+  {t:176.12,l:'是透明的焰火'},
+  {t:179.49,l:'是遇见你的我'},
+  {t:183.40,l:'拦不住的云'},
+  {t:186.04,l:'关不上的风'},
+  {t:188.51,l:'就像'},
+  {t:190.86,l:'我们跑向彼此裹着泥沙依然那么勇'},
+  {t:194.48,l:'让全世界下雨 再疯一点如何'},
+  {t:200.30,l:'闪电划过'},
+  {t:202.12,l:'见证我们如何越过湖泊也越过沼泽'},
+  {t:207.77,l:'多清澈'},
+  {t:210.07,l:'全世界的雨'},
+  {t:212.56,l:'是透明的焰火'},
+  {t:215.73,l:'在同行的天空'},
+  {t:219.06,l:'这一刻 不管要去哪里'},
+  {t:223.43,l:'不管来自哪里'},
+  {t:225.63,l:'这一刻 不怕'},
+  {t:227.75,l:'人们跑向彼此裹着泥沙依然那么勇'},
+  {t:230.50,l:'这一刻'},
+  {t:231.45,l:'要自由的降落'},
+  {t:233.18,l:'全世界的雨'},
+  {t:235.63,l:'一起落下吧'},
+  {t:238.76,l:'见证'},
+  {t:240.02,l:'一路无人知晓直到我们相遇这一刻'}
+];
+
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const iconPlay = document.getElementById('iconPlay');
+const iconPause = document.getElementById('iconPause');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const progressThumb = document.getElementById('progressThumb');
+const timeCurrent = document.getElementById('timeCurrent');
+const timeTotal = document.getElementById('timeTotal');
+const albumCover = document.getElementById('albumCover');
+const lyricPrev = document.getElementById('lyricPrev');
+const lyricCurrent = document.getElementById('lyricCurrent');
+const lyricNext = document.getElementById('lyricNext');
+const lyricsSection = document.getElementById('lyricsSection');
+
+let currentLineIndex = -1;
+let isPlaying = false;
+
+function togglePlay() { isPlaying ? pause() : play(); }
+
+function findLine(time) {
+  if (time < lyricsData[0].t) return -1;
+  for (let i = lyricsData.length - 1; i >= 0; i--) {
+    if (time >= lyricsData[i].t) return i;
+  }
+  return -1;
+}
+
+function renderLine(text) {
+  lyricCurrent.innerHTML = '';
+  lyricCurrent.classList.remove('dissolving');
+  text.split('').forEach((char, i) => {
+    const span = document.createElement('span');
+    span.className = 'lyric-char';
+    span.textContent = char;
+    span.style.setProperty('--char-delay', `${i * 55}ms`);
+    lyricCurrent.appendChild(span);
+  });
+  requestAnimationFrame(() => lyricCurrent.classList.add('active'));
+}
+
+function switchLine(newIdx) {
+  if (newIdx === currentLineIndex) return;
+  if (currentLineIndex >= 0) {
+    lyricCurrent.classList.add('dissolving');
+    lyricCurrent.classList.remove('active');
+  }
+  currentLineIndex = newIdx;
+  setTimeout(() => {
+    renderLine(lyricsData[newIdx].l);
+    lyricPrev.textContent = newIdx > 0 ? lyricsData[newIdx - 1].l : '';
+    lyricNext.textContent = newIdx < lyricsData.length - 1 ? lyricsData[newIdx + 1].l : '';
+  }, 320);
+}
+
+function play() {
+  audio.play().then(() => {
+    isPlaying = true;
+    iconPlay.style.display = 'none';
+    iconPause.style.display = 'block';
+    albumCover.classList.remove('paused');
+  }).catch(e => console.log('播放失败', e));
+}
+
+function pause() {
+  audio.pause();
+  isPlaying = false;
+  iconPlay.style.display = 'block';
+  iconPause.style.display = 'none';
+  albumCover.classList.add('paused');
+}
+
+function fmt(s) {
+  return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+}
+
+playBtn.addEventListener('click', () => isPlaying ? pause() : play());
+prevBtn.addEventListener('click', () => { audio.currentTime = 0; if (isPlaying) play(); });
+nextBtn.addEventListener('click', () => { audio.currentTime = audio.duration; });
+
+audio.addEventListener('loadedmetadata', () => {
+  timeTotal.textContent = fmt(audio.duration);
+});
+
+audio.addEventListener('timeupdate', () => {
+  const pct = (audio.currentTime / audio.duration) * 100 || 0;
+  progressFill.style.width = pct + '%';
+  progressThumb.style.left = pct + '%';
+  timeCurrent.textContent = fmt(audio.currentTime);
+  const idx = findLine(audio.currentTime);
+  if (idx >= 0 && idx !== currentLineIndex) switchLine(idx);
+});
+
+let dragging = false;
+progressBar.addEventListener('touchstart', e => { dragging = true; seek(e); }, {passive:true});
+progressBar.addEventListener('touchmove', e => { if (dragging) seek(e); }, {passive:true});
+progressBar.addEventListener('touchend', () => { dragging = false; });
+progressBar.addEventListener('click', e => {
+  const r = progressBar.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+function seek(e) {
+  const t = e.touches[0];
+  const r = progressBar.getBoundingClientRect();
+  audio.currentTime = Math.max(0, Math.min(1, (t.clientX - r.left) / r.width)) * audio.duration;
+}
+
+const storyInput = document.getElementById('storyInput');
+const storyEditor = document.getElementById('storyEditor');
+const storyPreview = document.getElementById('storyPreview');
+
+const savedStory = localStorage.getItem('shareStory_rain');
+if (savedStory) {
+  storyInput.value = savedStory;
+  updateStoryPreview();
+}
+
+function updateStoryPreview() {
+  var text = storyInput.value.trim();
+  if (text) {
+    storyPreview.textContent = '"' + text + '"';
+    storyPreview.classList.add('has-content');
+  } else {
+    storyPreview.textContent = '';
+    storyPreview.classList.remove('has-content');
+  }
+}
+
+storyInput.addEventListener('input', () => {
+  localStorage.setItem('shareStory_rain', storyInput.value);
+  updateStoryPreview();
+});
+
+function closeStoryEditor() {
+  storyEditor.classList.remove('show');
+}
+
+document.querySelector('.song-info').addEventListener('dblclick', () => {
+  storyEditor.classList.add('show');
+  storyInput.focus();
+  storyInput.select();
+});
+
+async function generateQRCodeImage(url, size) {
+  return new Promise((resolve, reject) => {
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    try {
+      new QRCode(tempDiv, {
+        text: url,
+        width: size,
+        height: size,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      
+      setTimeout(() => {
+        const img = tempDiv.querySelector('img');
+        if (img) {
+          if (img.complete) {
+            document.body.removeChild(tempDiv);
+            resolve(img);
+          } else {
+            img.onload = () => {
+              document.body.removeChild(tempDiv);
+              resolve(img);
+            };
+            img.onerror = () => {
+              document.body.removeChild(tempDiv);
+              reject(new Error('Failed to load QR code image'));
+            };
+          }
+        } else {
+          const canvas = tempDiv.querySelector('canvas');
+          if (canvas) {
+            const resultImg = new Image();
+            resultImg.src = canvas.toDataURL();
+            document.body.removeChild(tempDiv);
+            resolve(resultImg);
+          } else {
+            document.body.removeChild(tempDiv);
+            reject(new Error('Failed to generate QR code'));
+          }
+        }
+      }, 100);
+    } catch (e) {
+      document.body.removeChild(tempDiv);
+      reject(e);
+    }
+  });
+}
+
+async function generateShareCard() {
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const scale = 2;
+  const W = 400, H = 500;
+  canvas.width = W * scale;
+  canvas.height = H * scale;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(scale, scale);
+
+  var bgGrad = ctx.createRadialGradient(200, 200, 50, 200, 200, 400);
+  bgGrad.addColorStop(0, '#0f1520');
+  bgGrad.addColorStop(0.5, '#0a0e17');
+  bgGrad.addColorStop(1, '#060810');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 400, 500);
+
+  var orb1 = ctx.createRadialGradient(80, 50, 10, 80, 50, 180);
+  orb1.addColorStop(0, 'rgba(74,124,155,0.15)');
+  orb1.addColorStop(0.5, 'rgba(74,124,155,0.06)');
+  orb1.addColorStop(1, 'transparent');
+  ctx.fillStyle = orb1;
+  ctx.fillRect(0, 0, 400, 500);
+
+  var orb2 = ctx.createRadialGradient(350, 450, 10, 350, 450, 200);
+  orb2.addColorStop(0, 'rgba(107,163,199,0.12)');
+  orb2.addColorStop(0.5, 'rgba(107,163,199,0.04)');
+  orb2.addColorStop(1, 'transparent');
+  ctx.fillStyle = orb2;
+  ctx.fillRect(0, 0, 400, 500);
+
+  ctx.strokeStyle = 'rgba(107,163,199,0.08)';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(24, 24, 352, 452);
+
+  var coverSize = 170;
+  var coverX = 200;
+  var coverY = 120;
+
+  ctx.strokeStyle = 'rgba(107,163,199,0.2)';
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = 'rgba(107,163,199,0.3)';
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.arc(coverX, coverY, coverSize/2 + 10, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 8;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(coverX, coverY, coverSize/2, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+
+  var coverImg = albumCover;
+  var ar = coverImg.naturalWidth / coverImg.naturalHeight;
+  var dw, dh;
+  if (ar > 1) { dh = coverSize; dw = coverSize * ar; }
+  else { dw = coverSize; dh = coverSize / ar; }
+  ctx.drawImage(coverImg, coverX - dw/2, coverY - dh/2, dw, dh);
+  ctx.restore();
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 28px -apple-system, "SF Pro Display", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(107,163,199,0.2)';
+  ctx.shadowBlur = 12;
+  ctx.fillText('全世界的雨', 200, 250);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#8ab4d4';
+  ctx.font = '500 14px -apple-system, sans-serif';
+  ctx.fillText('Cover by Chris (v2)', 200, 272);
+
+  var lg = ctx.createLinearGradient(120, 0, 280, 0);
+  lg.addColorStop(0, 'transparent');
+  lg.addColorStop(0.3, 'rgba(107,163,199,0.08)');
+  lg.addColorStop(0.5, 'rgba(107,163,199,0.15)');
+  lg.addColorStop(0.7, 'rgba(107,163,199,0.08)');
+  lg.addColorStop(1, 'transparent');
+  ctx.fillStyle = lg;
+  ctx.fillRect(120, 292, 160, 1);
+
+  var story = storyInput.value.trim();
+  if (story) {
+    var mid = Math.ceil(story.length / 2);
+    var line1 = story.substring(0, mid);
+    var line2 = story.substring(mid);
+    ctx.fillStyle = 'rgba(184,212,232,0.6)';
+    ctx.font = 'italic 13px -apple-system, sans-serif';
+    ctx.fillText(line1, 200, 325);
+    if (line2) ctx.fillText(line2, 200, 343);
+  } else {
+    ctx.fillStyle = 'rgba(184,212,232,0.3)';
+    ctx.font = 'italic 12px -apple-system, sans-serif';
+    ctx.fillText('周深/陈嘉桦 · 《八仙!》电影主题曲', 200, 334);
+  }
+
+  var qrSize = 85;
+  var qrX = 157;
+  var qrY = 375;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(qrX, qrY, qrSize, qrSize);
+
+  var pageUrl = 'https://chrischou1130.github.io/rain/';
+  try {
+    var qrImg = await generateQRCodeImage(pageUrl, qrSize);
+    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+  } catch (e) {
+    console.error('Failed to generate QR code:', e);
+    ctx.fillStyle = '#cccccc';
+    ctx.fillRect(qrX, qrY, qrSize, qrSize);
+  }
+
+  ctx.fillStyle = 'rgba(184,212,232,0.35)';
+  ctx.font = '11px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('扫码收听完整版', 200, 485);
+
+  canvas.toBlob(async function(blob) {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+      var btn = document.getElementById('shareBtn');
+      var origHTML = btn.innerHTML;
+      var origBg = btn.style.background;
+      var origBorder = btn.style.borderColor;
+      btn.innerHTML = '✅ 已复制';
+      btn.style.background = 'rgba(107,163,199,0.3)';
+      btn.style.borderColor = 'rgba(107,163,199,0.6)';
+      setTimeout(function() {
+        btn.innerHTML = origHTML;
+        btn.style.background = origBg;
+        btn.style.borderColor = origBorder;
+      }, 2000);
+    } catch(err) {
+      var link = document.createElement('a');
+      link.download = '全世界的雨_Chris_分享卡.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  });
+}
+</script>
+</body>
+</html>
